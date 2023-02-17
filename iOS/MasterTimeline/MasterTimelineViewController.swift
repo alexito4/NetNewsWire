@@ -27,7 +27,8 @@ class MasterTimelineViewController: UITableViewController, UndoableCommandRunner
 	
 	private var refreshProgressItemButton: UIBarButtonItem!
 	private var firstUnreadButton: UIBarButtonItem!
-
+	private var markAboveAsReadButton: UIBarButtonItem!
+	
 	private lazy var dataSource = makeDataSource()
 	private let searchController = UISearchController(searchResultsController: nil)
 	
@@ -69,6 +70,8 @@ class MasterTimelineViewController: UITableViewController, UndoableCommandRunner
 		// Initialize Programmatic Buttons
 		filterButton = UIBarButtonItem(image: AppAssets.filterInactiveImage, style: .plain, target: self, action: #selector(toggleFilter(_:)))
 		firstUnreadButton = UIBarButtonItem(image: AppAssets.nextUnreadArticleImage, style: .plain, target: self, action: #selector(firstUnread(_:)))
+		markAboveAsReadButton = UIBarButtonItem(image: AppAssets.markAboveAsReadImage, style: .plain, target: self, action: #selector(markAboveAsRead(_:)))
+
 		
 		// Setup the Search Controller
 		searchController.delegate = self
@@ -180,6 +183,14 @@ class MasterTimelineViewController: UITableViewController, UndoableCommandRunner
 	
 	@IBAction func firstUnread(_ sender: Any) {
 		coordinator.selectFirstUnread()
+	}
+	
+	@IBAction func markAboveAsRead(_ sender: Any) {
+		guard let lastRowIndexPath = tableView.indexPathsForVisibleRows?.last else { return }
+		guard let article = dataSource.itemIdentifier(for: lastRowIndexPath) else { return }
+		print(article)
+		
+		self.coordinator.markAboveAsRead(article)
 	}
 	
 	@objc func refreshAccounts(_ sender: Any) {
@@ -682,9 +693,9 @@ private extension MasterTimelineViewController {
 		firstUnreadButton.isEnabled = coordinator.isTimelineUnreadAvailable
 		
 		if coordinator.isRootSplitCollapsed {
-			setToolbarItems([markAllAsReadButton, .flexibleSpace(), refreshProgressItemButton, .flexibleSpace(), firstUnreadButton], animated: false)
+			setToolbarItems([markAllAsReadButton, .flexibleSpace(), refreshProgressItemButton, .flexibleSpace(), firstUnreadButton, markAboveAsReadButton], animated: false)
 		} else {
-			setToolbarItems([markAllAsReadButton, .flexibleSpace()], animated: false)
+			setToolbarItems([markAllAsReadButton, .flexibleSpace(), markAboveAsReadButton], animated: false)
 		}
 	}
 	
